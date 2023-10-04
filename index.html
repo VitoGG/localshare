@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIle Upload</title>
+
+    <!-- Add the Bootstrap CSS link -->
+    <link rel="stylesheet" href="./assets/css/bootstrap.min.css" integrity="..." crossorigin="anonymous" />
+    <link rel="stylesheet" href="./assets/css/style.css" integrity="..." crossorigin="anonymous" />
+</head>
+
+<body>
+    <div id="root"></div>
+    <!-- Add the React and ReactDOM libraries -->
+    <script src="./assets/js/react.development.js"></script>
+    <script src="./assets/js/react-dom.development.js"></script>
+    <script src="./assets/js/babel.min.js"></script>
+
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script> -->
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+    <script type="text/babel">
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    filesList: []
+                };
+            }
+
+            componentDidMount() {
+                const http = new XMLHttpRequest();
+                http.open("POST", "cgi-bin/list.py");
+                http.getResponseHeader("ContentType:application/json")
+
+                const payload = new FormData();
+                payload.append("list", "all");
+
+                http.send();
+                http.onloadend = () => {
+                    const response = JSON.parse(http.response);
+                    if (response) {
+                         this.setState({ filesList: response.files })
+                    }
+                }
+            }
+            
+            componentDidUpdate() {
+                console.log(this.state);
+            }
+
+            render() {
+                return (
+                    <div className="container">
+                        <section className="mt-3">
+                            <h1>Upload File</h1>
+                            <form action="/cgi-bin/upload.py" method="post" enctype="multipart/form-data">
+                                <input className="form-control form-control-lg" type="file" name="file" />
+                                <button type="submit" className="btn btn-primary mt-3">Upload</button>
+                            </form>
+                        </section>
+                        <section className="mt-5">
+                            <h2>Files in the server</h2>     
+                            <div className="container">
+                                {this.state.filesList.length ? this.state.filesList.map((data, id) => {
+                                    return(
+                                        <a key={id} href={"uploads/" + data}>{data}</a>
+                                    )
+                                }) : "..."}
+                            </div>
+                        </section>
+                    </div>
+                );
+            }
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+
+</body>
+
+</html>
